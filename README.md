@@ -60,8 +60,13 @@ only to serve `dist/`.
 | ------------------ | ---------------------------------------------------------------- |
 | `wrangler.toml`    | Worker name and `./dist` as the static asset directory            |
 | `public/_headers`  | Security headers (CSP et al.) and cache policy                    |
-| `public/_redirects`| `www` → apex redirect                                             |
 | `.nvmrc`           | Pins Node 22 for the build — Vite 7 needs ≥20.19                  |
+
+There is deliberately **no `_redirects` file**. Under Workers static assets
+`_redirects` accepts only relative paths — an absolute URL fails the deploy with
+`Invalid _redirects configuration … Only relative URLs are allowed [code: 100324]`.
+Cloudflare Pages allowed absolute URLs; Workers does not. The `www` → apex
+redirect therefore lives in a zone-level Redirect Rule instead (see below).
 
 `public/` is copied verbatim into `dist/`, so `_headers` and `_redirects` land
 where Cloudflare expects them.
@@ -138,9 +143,19 @@ This works, but the forward is an HTTP redirect rather than real DNS, and you'd
 need to flip the canonical host in `index.html`, `public/sitemap.xml`, and
 `public/_redirects` to match.
 
-Both hostnames must be added to the Pages project for the `www` → apex rule in
-`public/_redirects` to fire — Cloudflare has to be serving `www` before it can
-redirect it.
+### The www → apex redirect
+
+Because `_redirects` can't do cross-hostname redirects under Workers, set this up
+as a **Redirect Rule** on the zone: Cloudflare → `reachmck.com` → **Rules →
+Redirect Rules → Create rule**.
+
+- **If**: `Hostname` `equals` `www.reachmck.com`
+- **Then**: Dynamic redirect → `concat("https://reachmck.com", http.request.uri.path)`
+- **Status**: 301, preserve query string
+
+`www.reachmck.com` still has to be attached to the Worker as a Custom domain (or
+at least be a proxied record on the zone) — Cloudflare can't redirect a hostname
+it isn't answering for.
 
 Then:
 
