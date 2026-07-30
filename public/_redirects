@@ -1,0 +1,11 @@
+# Cloudflare Pages redirects. Ships as dist/_redirects.
+#
+# INERT until reachmck.com is registered AND both hostnames are attached to this
+# Pages project in the Cloudflare dashboard. Until then the site is only served
+# from reachmck.pages.dev and this rule never matches.
+#
+# Sends www to the bare apex, which is what <link rel="canonical"> in index.html
+# and public/sitemap.xml already point at. If you'd rather make www canonical,
+# reverse this rule and update those two files to match.
+
+https://www.reachmck.com/* https://reachmck.com/:splat 301

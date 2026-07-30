@@ -1,0 +1,8 @@
+# Cloudflare Pages project config.
+# With the git integration the dashboard is the source of truth for build
+# settings; this file keeps `wrangler pages deploy` working the same way and
+# documents the project in the repo.
+
+name = "reachmck"
+compatibility_date = "2026-07-30"
+pages_build_output_dir = "dist"
