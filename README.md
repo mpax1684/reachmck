@@ -46,18 +46,31 @@ toggle (persisted to `localStorage`). An inline script in `index.html` sets
 
 ## Deploying
 
-Target is **Cloudflare Pages**, built from git — push to `main` and Cloudflare
-rebuilds. Config in the repo:
+Target is **Cloudflare Workers with static assets**, built from git — push to
+`main` and Cloudflare rebuilds. There's no server-side code; the Worker exists
+only to serve `dist/`.
+
+> Originally set up for Cloudflare **Pages**. Cloudflare's dashboard now routes
+> new projects through the Workers flow, whose deploy command is
+> `npx wrangler deploy` — and that rejects a Pages-style config
+> (`pages_build_output_dir`). Hence `[assets]`. `_headers` and `_redirects`
+> behave identically under both.
 
 | File               | Does what                                                        |
 | ------------------ | ---------------------------------------------------------------- |
-| `wrangler.toml`    | Project name and `dist` as the build output                       |
+| `wrangler.toml`    | Worker name and `./dist` as the static asset directory            |
 | `public/_headers`  | Security headers (CSP et al.) and cache policy                    |
-| `public/_redirects`| `www` → apex redirect (inert until the domain exists)             |
+| `public/_redirects`| `www` → apex redirect                                             |
 | `.nvmrc`           | Pins Node 22 for the build — Vite 7 needs ≥20.19                  |
 
 `public/` is copied verbatim into `dist/`, so `_headers` and `_redirects` land
 where Cloudflare expects them.
+
+Validate the config without deploying:
+
+```bash
+npm run build && npx wrangler deploy --dry-run
+```
 
 ### Before you can connect git
 
@@ -67,25 +80,23 @@ yet. Note that it's *nested* inside an unrelated repo rooted at
 your whole home directory. The two don't interact, but don't push this site
 there.
 
-Create an empty GitHub repo (no README, no .gitignore — this one already has
-both), then:
+Pushed to `https://github.com/mpax1684/reachmck` (public), branch `main`.
 
-```bash
-cd "/Users/mithunchandirasegar/Documents/Claude Projects/reachmck" && git remote add origin git@github.com:mpax1684/reachmck.git && git push -u origin main
-```
+Auth on this machine goes through `gh` as git's HTTPS credential helper. There
+are no SSH keys here, so use HTTPS remotes — if pushes start failing with
+"could not read Username", check `gh auth status` and that
+`gh config get git_protocol` returns `https`.
 
 ### Connecting Cloudflare
 
-In the Cloudflare dashboard: **Workers & Pages → Create → Pages → Connect to
-Git**, pick the repo, and confirm the build settings (it should read most of
-these from `wrangler.toml`):
+**Workers & Pages → Create → Connect to Git**, pick the repo, then:
 
+- Project name: `reachmck`
 - Build command: `npm run build`
-- Output directory: `dist`
-- Root directory: leave blank if the repo root is this folder
+- Deploy command: `npx wrangler deploy`
 
-First deploy lands on `reachmck.pages.dev`. The custom domain comes later — see
-below.
+First deploy lands on `reachmck.<account>.workers.dev`. The custom domain comes
+later — see below.
 
 ### The CSP is strict, and that has one consequence
 
