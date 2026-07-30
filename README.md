@@ -61,16 +61,18 @@ where Cloudflare expects them.
 
 ### Before you can connect git
 
-**This folder is not its own git repository.** It currently sits inside a repo
-rooted at `/Users/mithunchandirasegar`, whose `origin` is
-`github.com/mpax1684/Paxton.git` — your whole home directory. Do not point
-Cloudflare at that. Give the site its own repo first:
+This folder is its own git repository, with one commit on `main` and no remote
+yet. Note that it's *nested* inside an unrelated repo rooted at
+`/Users/mithunchandirasegar` whose `origin` is `github.com/mpax1684/Paxton.git` —
+your whole home directory. The two don't interact, but don't push this site
+there.
+
+Create an empty GitHub repo (no README, no .gitignore — this one already has
+both), then:
 
 ```bash
-cd "/Users/mithunchandirasegar/Documents/Claude Projects/reachmck" && git init && git add -A && git commit -m "Initial commit: reachmck.com"
+cd "/Users/mithunchandirasegar/Documents/Claude Projects/reachmck" && git remote add origin git@github.com:mpax1684/reachmck.git && git push -u origin main
 ```
-
-Then create an empty GitHub repo and push to it.
 
 ### Connecting Cloudflare
 
