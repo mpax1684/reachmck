@@ -110,17 +110,22 @@ nameservers moved there) — Pages project → **Custom domains** → add
 `reachmck.com`, then add `www.reachmck.com` as a second custom domain. Cloudflare
 writes the DNS records itself. Nothing to copy by hand.
 
-**If DNS stays at another registrar** — add what the Custom domains screen shows
-you, which will look like:
+**The domain is currently at GoDaddy** (nameservers `ns15`/`ns16.domaincontrol.com`),
+and **GoDaddy DNS cannot serve the apex.** It supports neither a `CNAME` at `@` nor
+`ALIAS`/`ANAME`, so `reachmck.com` can't be pointed at `reachmck.pages.dev` while
+DNS lives there. Two ways out:
 
-| Type    | Name  | Value                            |
-| ------- | ----- | -------------------------------- |
-| `CNAME` | `@`   | `reachmck.pages.dev`             |
-| `CNAME` | `www` | `reachmck.pages.dev`             |
+*Move nameservers to Cloudflare (recommended).* Add the domain as a site in
+Cloudflare, take the two assigned nameservers, and replace GoDaddy's under
+**Domain settings → Nameservers → Change**. Apex then works via CNAME flattening,
+and Pages writes its own records. Propagation is usually under an hour. Safe here
+because the domain is freshly registered — nothing else depends on its DNS.
 
-Use the exact values from the dashboard, not these. A registrar that won't take a
-`CNAME` at the apex may offer `ALIAS`/`ANAME` instead; if it offers neither,
-moving nameservers to Cloudflare is the easier path.
+*Or keep GoDaddy and make `www` canonical.* Add `CNAME www → reachmck.pages.dev`,
+then use GoDaddy's domain forwarding to send the apex to `https://www.reachmck.com`.
+This works, but the forward is an HTTP redirect rather than real DNS, and you'd
+need to flip the canonical host in `index.html`, `public/sitemap.xml`, and
+`public/_redirects` to match.
 
 Both hostnames must be added to the Pages project for the `www` → apex rule in
 `public/_redirects` to fire — Cloudflare has to be serving `www` before it can
